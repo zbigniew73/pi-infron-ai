@@ -62,8 +62,14 @@ export const REASONING_LEVELS: ThinkingLevelMap = {
   max: null,
 };
 
-const REASONING_NAME_PATTERN = /thinking|reason|r1\b|(^|[/-])o[134](-|$)/i;
-export const REASONING_DESCRIPTION_PATTERN = /\b(reasoning|thinking)\b/i;
+// Models matched here are registered without reasoning. Explicit non-thinking
+// variants always match; specialist patterns never override a name that says
+// thinking or reasoning.
+export const NON_REASONING_PATTERNS = {
+  nonThinkingVariant: /\bno(n)?[\s_-]?(reasoning|thinking|think)\b/i,
+  specialist: /(^|[\s/._-])(ocr|mt|embed\w*|rerank\w*|tts|whisper)([\s._:-]|$)/i,
+};
+const REASONING_WORD_PATTERN = /thinking|reasoning/i;
 
 // Infron reports cache reads at roughly a fifth of the input price and does
 // not bill cache writes.
@@ -80,13 +86,17 @@ export function isChatModel(model: InfronModel): boolean {
   return !model.deprecated && !model.is_display_only;
 }
 
-/** No catalog field marks reasoning models, so this is a name/description heuristic. */
+/**
+ * No catalog field marks reasoning models. Infron ignores `reasoning` for
+ * models that do not reason, so every text model counts as reasoning-capable
+ * unless its id or name matches NON_REASONING_PATTERNS.
+ */
 export function isReasoningModel(model: InfronModel): boolean {
-  return (
-    REASONING_NAME_PATTERN.test(model.id) ||
-    REASONING_NAME_PATTERN.test(model.display_name ?? "") ||
-    REASONING_DESCRIPTION_PATTERN.test(model.description ?? "")
-  );
+  const names = [model.id, model.display_name ?? ""];
+  const matches = (pattern: RegExp) => names.some((name) => pattern.test(name));
+  if (matches(NON_REASONING_PATTERNS.nonThinkingVariant)) return false;
+  if (matches(REASONING_WORD_PATTERN)) return true;
+  return !matches(NON_REASONING_PATTERNS.specialist);
 }
 
 export function contextWindowOf(model: InfronModel): number {

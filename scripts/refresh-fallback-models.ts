@@ -4,25 +4,20 @@ import { fileURLToPath } from "node:url";
 
 import { MODELS_URL } from "../src/config.js";
 import { parseModelCatalog, type InfronModel } from "../src/infron-api.js";
-import {
-  isChatModel,
-  REASONING_DESCRIPTION_PATTERN,
-} from "../src/model-mapping.js";
+import { isChatModel } from "../src/model-mapping.js";
 
-// Keeps only what the mapper reads. Descriptions shrink to the detected
-// reasoning keyword and providers to the smallest context length.
+// Keeps only what the mapper reads; providers shrink to the smallest context
+// length.
 function trim(model: InfronModel): InfronModel {
   const providerContexts = (model.providers ?? [])
     .map((provider) => provider.context_length)
     .filter((value): value is number => value !== undefined);
-  const keyword = REASONING_DESCRIPTION_PATTERN.exec(model.description ?? "");
   const inputs = model.input_modalities?.filter(
     (entry) => entry === "text" || entry === "image",
   );
   const trimmed: InfronModel = {
     id: model.id,
     display_name: model.display_name,
-    description: keyword?.[0].toLowerCase(),
     category_type: model.category_type,
     supported_endpoint_types: ["openai"],
     input_modalities: inputs && inputs.length > 0 ? inputs : undefined,

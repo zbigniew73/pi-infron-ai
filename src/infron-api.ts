@@ -16,7 +16,6 @@ export interface InfronProvider {
 export interface InfronModel {
   id: string;
   display_name?: string;
-  description?: string;
   category_type?: string;
   supported_endpoint_types?: string[];
   input_modalities?: string[];
@@ -162,7 +161,6 @@ function parseModel(value: unknown): InfronModel | null {
   const model: InfronModel = { id };
   const strings = {
     display_name: optionalString(value.display_name),
-    description: optionalString(value.description, 8000),
     category_type: optionalString(value.category_type, 64),
   };
   const arrays = {

@@ -6,6 +6,7 @@ import { parseModelCatalog, type InfronModel } from "../../src/infron-api.js";
 import {
   isChatModel,
   isReasoningModel,
+  NON_REASONING_PATTERNS,
   REASONING_LEVELS,
   toProviderModel,
 } from "../../src/model-mapping.js";
@@ -110,24 +111,72 @@ test("name prefers display_name", () => {
   assert.equal(toProviderModel(parse(anonymous))?.name, KIMI.id);
 });
 
-test("reasoning heuristic matches ids, names, and descriptions", () => {
+function fallbackModel(id: string): InfronModel {
+  const model = FALLBACK_MODELS.find((entry) => entry.id === id);
+  assert.ok(model, `${id} missing from the fallback catalog`);
+  return model;
+}
+
+test("text models are reasoning-capable by default, including catalog models without keywords", () => {
+  for (const id of [
+    "deepseek/deepseek-v4-flash",
+    "deepseek/deepseek-v4-flash:free",
+    "deepseek/deepseek-v4.1-flash:free",
+    "motif/motif-3",
+    "qwen/qwen3.7-flash",
+    "qwen/qwen3.8-27b:free",
+    "openai/gpt-5.5",
+    "qwen/qwen3-vl-235b-a22b-thinking",
+    "x-ai/grok-4.2-reasoning",
+    "moonshotai/kimi-k2-instruct",
+    "openai/gpt-5.1-chat",
+  ]) {
+    assert.equal(isReasoningModel(fallbackModel(id)), true, id);
+    assert.equal(toProviderModel(fallbackModel(id))?.reasoning, true, id);
+  }
+});
+
+test("clearly non-reasoning specialist and non-thinking models are excluded", () => {
+  for (const id of [
+    "deepseek/deepseek-ocr",
+    "rednote-hilab/dots.ocr",
+    "qwen/qwen-mt-lite",
+    "qwen/qwen-mt-plus",
+    "x-ai/grok-4.2-non-reasoning",
+  ]) {
+    assert.equal(isReasoningModel(fallbackModel(id)), false, id);
+  }
   const cases: Array<[Partial<InfronModel>, boolean]> = [
-    [{ id: "qwen/qwen3-vl-235b-a22b-thinking" }, true],
-    [{ id: "deepseek/deepseek-r1" }, true],
-    [{ id: "deepseek/deepseek-r1-0528" }, true],
-    [{ id: "openai/o3-mini" }, true],
-    [{ id: "openai/o1" }, true],
-    [{ id: "x-ai/grok-4.2-reasoning" }, true],
-    [{ id: "vendor/model", display_name: "Vendor: Deep Reasoner" }, true],
-    [{ id: "vendor/model", description: "A hybrid reasoning model." }, true],
-    [{ id: "moonshotai/kimi-k2.6", description: KIMI.description }, false],
-    [{ id: "openai/gpt-4o" }, false],
-    [{ id: "vendor/pro1" }, false],
-    [{ id: "vendor/model", description: "Reasonable defaults" }, false],
+    [{ id: "vendor/text-embedding-3" }, false],
+    [{ id: "vendor/bge-reranker-v2" }, false],
+    [{ id: "vendor/voice-tts" }, false],
+    [{ id: "openai/whisper-large-v3" }, false],
+    [{ id: "vendor/model-mt" }, false],
+    [{ id: "vendor/model-non-thinking" }, false],
+    [{ id: "vendor/model-no-think" }, false],
+    [{ id: "vendor/model", display_name: "Vendor: Model Non Reasoning" }, false],
+    [{ id: "vendor/ocr-thinking" }, true],
+    [{ id: "vendor/model", display_name: "Vendor: Embed Reasoning" }, true],
+    [{ id: "vendor/smt-large" }, true],
+    [{ id: "vendor/model-instruct" }, true],
   ];
   for (const [model, expected] of cases) {
     assert.equal(isReasoningModel({ id: "x", ...model }), expected, JSON.stringify(model));
   }
+});
+
+test("exclusion patterns are exported and match both id and display name", () => {
+  assert.ok(NON_REASONING_PATTERNS.specialist.test("qwen/qwen-mt-lite"));
+  assert.ok(NON_REASONING_PATTERNS.specialist.test("DeepSeek: Deepseek OCR"));
+  assert.ok(NON_REASONING_PATTERNS.nonThinkingVariant.test("xAI: Grok 4.2 Non Reasoning"));
+  assert.ok(!NON_REASONING_PATTERNS.nonThinkingVariant.test("vendor/nano-thinking"));
+});
+
+test("catalog descriptions do not influence reasoning", () => {
+  const described = parse({ ...KIMI, description: "A non-reasoning OCR embedding model." });
+  assert.equal(isReasoningModel(described), true);
+  const mt = parse({ ...KIMI, id: "qwen/qwen-mt-plus", description: "A hybrid reasoning model." });
+  assert.equal(isReasoningModel(mt), false);
 });
 
 test("reasoning models use the openrouter thinking format and effort map", () => {
@@ -156,11 +205,11 @@ test("reasoning models use the openrouter thinking format and effort map", () =>
 });
 
 test("non-reasoning models get base compat and strict mode only with JSON mode", () => {
-  const kimi = toProviderModel(parse(KIMI));
-  assert.ok(kimi);
-  assert.equal(kimi.reasoning, false);
-  assert.equal(kimi.thinkingLevelMap, undefined);
-  assert.deepEqual(kimi.compat, {
+  const mt = toProviderModel(parse({ ...KIMI, id: "qwen/qwen-mt-plus", display_name: "Qwen: Qwen Mt Plus" }));
+  assert.ok(mt);
+  assert.equal(mt.reasoning, false);
+  assert.equal(mt.thinkingLevelMap, undefined);
+  assert.deepEqual(mt.compat, {
     supportsDeveloperRole: false,
     maxTokensField: "max_tokens",
     supportsUsageInStreaming: true,
@@ -169,6 +218,7 @@ test("non-reasoning models get base compat and strict mode only with JSON mode",
   });
   const noJson = toProviderModel(parse({ ...KIMI, supports_json_mode: false }));
   assert.equal(noJson?.compat.supportsStrictMode, false);
+  assert.equal(noJson?.reasoning, true);
 });
 
 test("every bundled fallback model maps to a Pi model", () => {

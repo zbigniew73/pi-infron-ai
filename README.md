@@ -133,13 +133,16 @@ Rzeczywisty koszt zależy od dostawcy, do którego Infron skieruje zapytanie.
 
 ### Reasoning i narzędzia
 
-Katalog nie zawiera flagi reasoning, więc rozszerzenie uznaje model za
-rozumujący, gdy sugeruje to jego identyfikator, nazwa lub opis. Dla takich
-modeli Pi wysyła `reasoning: { "effort": ... }`. Poziomy `minimal`, `low`,
-`medium`, `high` i `xhigh` trafiają do Infron bez zmian, a wyłączenie
-myślenia wysyła `none`. Poziomy są wskazówką dla modelu i nie zmieniają zużycia
-tokenów w przewidywalny sposób. Pole wysłane do modelu, który nie rozumuje,
-jest ignorowane.
+Katalog nie zawiera flagi reasoning, więc rozszerzenie traktuje każdy model
+tekstowy jako zdolny do rozumowania. Wyjątkiem jest krótka lista wyraźnie
+nierozumujących modeli specjalistycznych (np. OCR i tłumaczenie) oraz wariantów
+oznaczonych jako bez myślenia. Dla pozostałych modeli Pi wysyła
+`reasoning: { "effort": ... }`. Pole wysłane do modelu, który nie rozumuje,
+jest ignorowane. Poziomy `minimal`, `low`, `medium`, `high` i `xhigh` trafiają
+do Infron bez zmian, a wyłączenie myślenia wysyła `none`. Poziomy są wskazówką
+dla modelu i nie zmieniają zużycia tokenów w przewidywalny sposób. Wartość
+`none` nie u każdego dostawcy wyłącza rozumowanie; zależy to od modelu i
+dostawcy.
 
 Tekst rozumowania z pól `reasoning_content` i `reasoning` wyświetla Pi.
 Zapytania używają `max_tokens` (Infron przycina wartość do limitu modelu)
@@ -211,7 +214,8 @@ npm run test:live
 - Używany jest wyłącznie punkt Chat Completions. Modele tylko dla Responses API
   oraz embeddingi, obraz, wideo i audio nie są rejestrowane.
 - Routing dostawców, warstwy usług i własne klucze dostawców nie są dostępne.
-- Wykrywanie reasoning to heurystyka. Model rozpoznany błędnie działa normalnie.
+- Wszystkie modele tekstowe poza krótką listą wyjątków mają włączone poziomy
+  myślenia, także te, które nie rozumują. Takie modele ignorują to ustawienie.
 - Faktyczny kontekst zapytania może być niższy od zarejestrowanego, jeśli
   dostawca zmieni swoje limity.
 
@@ -350,12 +354,15 @@ The real cost depends on the provider Infron routes the request to.
 
 ### Reasoning and tools
 
-The catalog has no reasoning flag, so the extension treats a model as
-reasoning-capable when its id, name, or description suggests it. For those
-models Pi sends `reasoning: { "effort": ... }`. The levels `minimal`, `low`,
+The catalog has no reasoning flag, so the extension treats every text model as
+reasoning-capable. The exception is a short list of clearly non-reasoning
+specialist models (such as OCR and translation) and variants marked as
+non-thinking. For all other models Pi sends `reasoning: { "effort": ... }`.
+The field is ignored by models that do not reason. The levels `minimal`, `low`,
 `medium`, `high`, and `xhigh` pass through to Infron unchanged, and turning
 thinking off sends `none`. Levels are hints to the model and do not change
-token usage predictably. The field is ignored by models that do not reason.
+token usage predictably. The value `none` may not disable reasoning on every
+provider; support depends on the model and the provider.
 
 Reasoning text from the `reasoning_content` and `reasoning` fields is shown by
 Pi. Requests use `max_tokens` (Infron clamps the value to the model limit) and
@@ -428,7 +435,8 @@ npm run test:live
   embedding, image, video, and audio models, are not registered.
 - Provider routing, service tiers, and bring-your-own provider keys are not
   available.
-- Reasoning detection is a heuristic; a misclassified model behaves normally.
+- All text models outside the short exception list offer thinking levels,
+  including models that do not reason. Those models ignore the setting.
 - The effective context of a request can be lower than the registered one if a
   provider changes its limits.
 

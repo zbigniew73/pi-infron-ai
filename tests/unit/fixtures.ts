@@ -5,8 +5,6 @@ export const KIMI = {
   id: "moonshotai/kimi-k2.6",
   object: "model",
   display_name: "Moonshot: Kimi K2.6",
-  description:
-    "Kimi K2.6 is an open-source, native multimodal agentic model that significantly advances practical capabilities in long-horizon coding.",
   category_type: "LLM",
   supported_endpoint_types: ["openai"],
   input_modalities: ["text", "image"],
@@ -32,8 +30,6 @@ export const KIMI = {
 export const FREE_FLASH = {
   id: "qwen/qwen3.8-flash:free",
   display_name: "Qwen: Qwen3.8 Flash (Free)",
-  description:
-    "Infron offers free variants of selected models. Free variants carry the :free suffix and are billed at $0.00 per token.",
   category_type: "LLM",
   supported_endpoint_types: ["openai"],
   input_modalities: ["text", "image", "video"],
@@ -57,7 +53,6 @@ export const FREE_FLASH = {
 export const GEMINI_IMAGE_MIXED_CASE = {
   id: "google/gemini-2.5-flash-image",
   display_name: "Google: Gemini 2.5 flash image",
-  description: "Gemini 2.5 Flash Image is a state of the art image generation model with contextual understanding.",
   category_type: "LLM",
   supported_endpoint_types: ["gemini", "openai"],
   input_modalities: ["Text", "Image"],
@@ -81,7 +76,6 @@ export const GEMINI_IMAGE_MIXED_CASE = {
 export const CODEX_RESPONSES_ONLY = {
   id: "openai/gpt-5-codex",
   display_name: "OpenAI: Gpt 5 codex",
-  description: "GPT-5-Codex is a specialized version of GPT-5 optimized for software engineering and coding workflows.",
   category_type: "LLM",
   supported_endpoint_types: ["openai-response"],
   input_modalities: ["text"],
@@ -105,7 +99,6 @@ export const CODEX_RESPONSES_ONLY = {
 export const EMBEDDING = {
   id: "thenlper/gte-base",
   display_name: "Thenlper: Gte Base",
-  description: "The gte-base embedding model encodes English sentences into a 768-dimensional dense vector space.",
   category_type: "Embeddings",
   supported_endpoint_types: ["openai"],
   input_modalities: ["text"],
@@ -129,7 +122,6 @@ export const EMBEDDING = {
 export const QWEN_THINKING = {
   id: "qwen/qwen3-vl-235b-a22b-thinking",
   display_name: "Qwen: Qwen3 VL 235B A22B Thinking",
-  description: "Qwen3-VL-235B-A22B Thinking is a multimodal model that unifies strong text generation with visual understanding.",
   category_type: "LLM",
   supported_endpoint_types: ["openai"],
   input_modalities: ["text"],
