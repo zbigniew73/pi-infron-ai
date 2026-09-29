@@ -162,4 +162,4 @@ export const ERROR_CREDITS =
 export const ERROR_FREE_BALANCE =
   '{"error":{"message":"Free model requires account balance greater than $4.999999. (request id: req-test)","type":"infron_ai_error"}}';
 
-export const BALANCE_OK = '{"account_name":"user@example.test","credit_balance":9.99}';
+export const BALANCE_OK = '{"account_name":"user@example.test","credit_balance":9.9967}';

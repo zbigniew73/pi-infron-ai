@@ -25,7 +25,7 @@ export function selectProbeModel(
 }
 
 export function formatUsd(value: number): string {
-  return `$${value.toFixed(2)}`;
+  return `$${value.toFixed(4)}`;
 }
 
 /** `/infron [model]`: credential source, credit balance, and a one-token completion probe. */
@@ -60,17 +60,19 @@ export function registerStatusCommand(
           : account.status === "invalid"
             ? "key rejected by Infron"
             : `balance unavailable (${account.detail})`;
-      ctx.ui.notify(
+      // Pi replaces consecutive info notices in place, so report in one call.
+      const statusLine =
         `${PROVIDER_LABEL}: key from ${source}, ${balanceText}, ` +
-          `${modelIds.length} models registered`,
-        account.status === "invalid" ? "error" : "info",
-      );
+        `${modelIds.length} models registered`;
 
       const currentModel =
         ctx.model?.provider === PROVIDER_ID ? ctx.model.id : undefined;
       const model = selectProbeModel(args, currentModel, modelIds);
       if (!model) {
-        ctx.ui.notify(`${PROVIDER_LABEL}: no usable model is registered`, "error");
+        ctx.ui.notify(
+          `${statusLine}\n${PROVIDER_LABEL}: no usable model is registered`,
+          "error",
+        );
         return;
       }
       const result = await probe(apiKey, model);
@@ -88,8 +90,8 @@ export function registerStatusCommand(
           `$${FREE_MODEL_MIN_BALANCE_USD})`;
       }
       ctx.ui.notify(
-        `${PROVIDER_LABEL} probe: ${detail}`,
-        result.ok ? "info" : "error",
+        `${statusLine}\n${PROVIDER_LABEL} probe: ${detail}`,
+        account.status === "invalid" || !result.ok ? "error" : "info",
       );
     },
   });

@@ -148,7 +148,7 @@ test("validateApiKey accepts 200 with a balance and never exposes the account na
   });
   assert.equal(requested, BALANCE_URL);
   assert.equal(result.status, "valid");
-  assert.equal(result.creditBalance, 9.99);
+  assert.equal(result.creditBalance, 9.9967);
   assert.doesNotMatch(JSON.stringify(result), /@/);
 });
 
