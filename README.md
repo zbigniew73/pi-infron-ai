@@ -14,7 +14,7 @@ Chat Completions API.
 ### Szybki start
 
 ```bash
-pi install npm:pi-infron-ai
+pi install git:github.com/zbigniew73/pi-infron-ai
 ```
 
 1. Uruchom Pi i wpisz `/login`, wybierz **Infron AI**, wklej klucz z
@@ -26,24 +26,19 @@ pi install npm:pi-infron-ai
 
 - Node.js 22.19.0 lub nowszy
 - Pi 0.80.7 lub nowszy
+- `git` w systemie (instalacja pobiera repozytorium)
 - Klucz API Infron (lista modeli działa bez klucza, rozmowa już nie)
 
 ### Instalacja
 
 ```bash
-pi install npm:pi-infron-ai         # dla bieżącego użytkownika
-pi install -l npm:pi-infron-ai      # tylko dla bieżącego projektu
-pi -e npm:pi-infron-ai              # jednorazowe uruchomienie bez instalacji
-pi install git:github.com/zbigniew73/pi-infron-ai
+pi install git:github.com/zbigniew73/pi-infron-ai       # dla bieżącego użytkownika
+pi install -l git:github.com/zbigniew73/pi-infron-ai    # tylko dla bieżącego projektu
+pi install https://github.com/zbigniew73/pi-infron-ai   # ten sam pakiet, pełny adres URL
 ```
 
-Instalacja ręczna z kodu źródłowego:
-
-```bash
-git clone https://github.com/zbigniew73/pi-infron-ai.git ~/.pi/agent/extensions/pi-infron-ai
-```
-
-Aktualizacja i usunięcie: `pi update npm:pi-infron-ai`, `pi remove npm:pi-infron-ai`.
+Lista zainstalowanych: `pi list`. Aktualizacja: `pi update`. Usunięcie:
+`pi remove git:github.com/zbigniew73/pi-infron-ai`.
 
 ### Co dostajesz
 
@@ -54,7 +49,7 @@ Aktualizacja i usunięcie: `pi update npm:pi-infron-ai`, `pi remove npm:pi-infro
 | Tryb offline | Wbudowany katalog zapasowy z pełną listą modeli |
 | Limity | Okno kontekstu i limit odpowiedzi ustawiane z danych katalogu |
 | Koszty | Ceny wejścia, wyjścia i odczytu z cache w USD |
-| Reasoning | Sterowanie poziomem myślenia dla modeli, które to obsługują |
+| Reasoning | Poziomy myślenia w `/thinking` dla modeli tekstowych |
 | Narzędzia | Wywoływanie funkcji i odpowiedzi strukturalne |
 | Błędy | Czytelne komunikaty zamiast surowego JSON-a |
 | Diagnostyka | `/infron` pokazuje źródło klucza, saldo i wynik próbnego zapytania |
@@ -138,8 +133,8 @@ tekstowy jako zdolny do rozumowania. Wyjątkiem jest krótka lista wyraźnie
 nierozumujących modeli specjalistycznych (np. OCR i tłumaczenie) oraz wariantów
 oznaczonych jako bez myślenia. Dla pozostałych modeli Pi wysyła
 `reasoning: { "effort": ... }`. Pole wysłane do modelu, który nie rozumuje,
-jest ignorowane. Poziomy `minimal`, `low`, `medium`, `high` i `xhigh` trafiają
-do Infron bez zmian, a wyłączenie myślenia wysyła `none`. Poziomy są wskazówką
+jest ignorowane. Poziom wybrany w `/thinking` (`minimal`, `low`, `medium`,
+`high`, `xhigh`) trafia do Infron bez zmian, a `off` wysyła `none`. Poziomy są wskazówką
 dla modelu i nie zmieniają zużycia tokenów w przewidywalny sposób. Wartość
 `none` nie u każdego dostawcy wyłącza rozumowanie; zależy to od modelu i
 dostawcy.
@@ -219,10 +214,6 @@ npm run test:live
 - Faktyczny kontekst zapytania może być niższy od zarejestrowanego, jeśli
   dostawca zmieni swoje limity.
 
-### Licencja
-
-[MIT](LICENSE)
-
 ---
 
 ## English
@@ -235,7 +226,7 @@ OpenAI-compatible Chat Completions API.
 ### Quick start
 
 ```bash
-pi install npm:pi-infron-ai
+pi install git:github.com/zbigniew73/pi-infron-ai
 ```
 
 1. Start Pi, run `/login`, choose **Infron AI**, and paste a key from the
@@ -247,24 +238,19 @@ pi install npm:pi-infron-ai
 
 - Node.js 22.19.0 or newer
 - Pi 0.80.7 or newer
+- `git` on the system (the install fetches the repository)
 - An Infron API key (the model list works without one, chatting does not)
 
 ### Installation
 
 ```bash
-pi install npm:pi-infron-ai         # for the current user
-pi install -l npm:pi-infron-ai      # for the current project only
-pi -e npm:pi-infron-ai              # one-off run without installing
-pi install git:github.com/zbigniew73/pi-infron-ai
+pi install git:github.com/zbigniew73/pi-infron-ai       # for the current user
+pi install -l git:github.com/zbigniew73/pi-infron-ai    # for the current project only
+pi install https://github.com/zbigniew73/pi-infron-ai   # same package, full URL
 ```
 
-Manual install from source:
-
-```bash
-git clone https://github.com/zbigniew73/pi-infron-ai.git ~/.pi/agent/extensions/pi-infron-ai
-```
-
-Update or remove with `pi update npm:pi-infron-ai` and `pi remove npm:pi-infron-ai`.
+List installed packages with `pi list`, update with `pi update`, and remove with
+`pi remove git:github.com/zbigniew73/pi-infron-ai`.
 
 ### What you get
 
@@ -275,7 +261,7 @@ Update or remove with `pi update npm:pi-infron-ai` and `pi remove npm:pi-infron-
 | Offline mode | Bundled fallback catalog with the full model list |
 | Limits | Context window and output limit set from catalog data |
 | Costs | Input, output, and cache-read prices in USD |
-| Reasoning | Thinking-level control for models that support it |
+| Reasoning | Thinking levels in `/thinking` for text models |
 | Tools | Function calling and structured output |
 | Errors | Readable messages instead of raw JSON |
 | Diagnostics | `/infron` shows the key source, balance, and a probe result |
@@ -358,9 +344,9 @@ The catalog has no reasoning flag, so the extension treats every text model as
 reasoning-capable. The exception is a short list of clearly non-reasoning
 specialist models (such as OCR and translation) and variants marked as
 non-thinking. For all other models Pi sends `reasoning: { "effort": ... }`.
-The field is ignored by models that do not reason. The levels `minimal`, `low`,
-`medium`, `high`, and `xhigh` pass through to Infron unchanged, and turning
-thinking off sends `none`. Levels are hints to the model and do not change
+The field is ignored by models that do not reason. The level chosen in
+`/thinking` (`minimal`, `low`, `medium`, `high`, `xhigh`) passes through to
+Infron unchanged, and `off` sends `none`. Levels are hints to the model and do not change
 token usage predictably. The value `none` may not disable reasoning on every
 provider; support depends on the model and the provider.
 
@@ -439,7 +425,3 @@ npm run test:live
   including models that do not reason. Those models ignore the setting.
 - The effective context of a request can be lower than the registered one if a
   provider changes its limits.
-
-### License
-
-[MIT](LICENSE)
